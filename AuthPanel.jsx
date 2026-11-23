@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { apiFetch } from '../api.js';
+export default function AuthPanel({ user, onAuth, onLogout }) {
+  const [mode, setMode] = useState('login'); const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState('');
+  async function submit(e) { e.preventDefault(); setError(''); try { const data = await apiFetch(`/auth/${mode === 'login' ? 'login' : 'register'}`, { method: 'POST', body: JSON.stringify(mode === 'login' ? { email, password } : { name, email, password }) }); localStorage.setItem('token', data.token); localStorage.setItem('user', JSON.stringify(data.user)); onAuth(data.user); setPassword(''); } catch (err) { setError(err.message); } }
+  if (user) return <section className="auth-panel"><span>Вы вошли как <b>{user.name}</b> ({user.role})</span><button type="button" onClick={onLogout}>Выйти</button></section>;
+  return <section className="auth-panel"><h3>{mode === 'login' ? 'Вход' : 'Регистрация'}</h3><form onSubmit={submit} className="auth-form">{mode === 'register' && <input placeholder="Имя" value={name} onChange={e=>setName(e.target.value)} required/>}<input type="email" placeholder="E-mail" value={email} onChange={e=>setEmail(e.target.value)} required/><input type="password" placeholder="Пароль (минимум 8 символов)" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} required/><button>{mode === 'login' ? 'Войти' : 'Зарегистрироваться'}</button></form>{error && <p className="error">{error}</p>}<button className="link-button" onClick={()=>{setMode(mode==='login'?'register':'login');setError('')}}>{mode === 'login' ? 'Создать аккаунт' : 'Уже есть аккаунт? Войти'}</button></section>;
+}
